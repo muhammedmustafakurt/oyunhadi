@@ -8,6 +8,8 @@ eklenmiştir; ayrı bir uygulama veya ek servis yoktur.
 
 1. Oyuncu masadaki karekodu okutur (`/[mekan]/[masa]/oyunlar`). Sayfanın sağ altında küçük bir
    **sohbet balonu** (canlı destek düğmesi) görünür; okunmamış mesaj varsa üstünde rozet taşır.
+   Balon hem oyun destesi sayfasında hem oyun ekranlarında vardır. Yeni istek ve mesajlarda balonun
+   sol üstünde bildirim kartı çıkar (telefonda titreşim, sekme başlığında sayı).
 2. Balona basınca alt sayfa şeklinde sohbet paneli açılır. İlk açılışta sunucu bir ziyaretçi oturumu
    ve **tahmin edilemez 32 baytlık belirteç** üretir. Belirteç tarayıcıda
    `oh-chat-<mekan>-<masa>` anahtarında saklanır; işletme ve masa bilgisi her istekte bu oturum

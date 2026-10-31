@@ -1,11 +1,12 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import useChat from './useChat';
 import ChatHub from './ChatHub';
 import ChatRoom from './ChatRoom';
 
 // Canlı destek balonu: masa sayfasının sağ altındaki küçük ikon. Kapalıyken okunmamış sayacını
-// güncel tutmak için yavaş, açıkken gerçek zamanlı (2 sn) yoklama yapar.
+// güncel tutmak için yavaş, açıkken gerçek zamanlı (2 sn) yoklama yapar. Yeni istek ve mesajlarda
+// balonun sol üstünde bildirim kartı çıkar.
 export default function ChatWidget({ cafe, masa, no }) {
   const [open, setOpen] = useState(false);
   const [room, setRoom] = useState(0); // 0: sohbet listesi, >0: açık oda kimliği
@@ -15,11 +16,87 @@ export default function ChatWidget({ cafe, masa, no }) {
     active: open,
   });
 
+  const [toasts, setToasts] = useState([]);
+  const seenReq = useRef(null);   // bildirimi verilmiş istek kimlikleri
+  const roomStamp = useRef(null); // oda -> son mesaj zamanı
+  const baseTitle = useRef('');
+
+  useEffect(() => {
+    baseTitle.current = document.title;
+    return () => { document.title = baseTitle.current; };
+  }, []);
+
   const unread = (data?.rooms ?? []).reduce((a, r) => a + (r.unread || 0), 0);
+
+  const push = (t) => {
+    const id = Date.now() + Math.random();
+    setToasts((p) => [...p.slice(-2), { ...t, id }]); // en fazla üç bildirim
+    setTimeout(() => setToasts((p) => p.filter((x) => x.id !== id)), 6000);
+    try { navigator.vibrate?.(60); } catch {}
+  };
+
+  // Yeni istek / yeni mesaj farkı: ilk yüklemede sessiz kalınır, sonraki değişimlerde bildirilir.
+  useEffect(() => {
+    if (!data) return;
+    const first = seenReq.current === null;
+    if (first) { seenReq.current = new Set(); roomStamp.current = new Map(); }
+
+    for (const r of data.requestsIn ?? []) {
+      if (!first && !seenReq.current.has(r.id) && !open) {
+        push({
+          kind: 'request',
+          title: 'Sohbet isteği',
+          body: `${r.from.nick} (Masa ${r.from.tbl.replace('masa-', '')}) sohbet etmek istiyor.`,
+          go: () => { setOpen(true); setRoom(0); },
+        });
+      }
+      seenReq.current.add(r.id);
+    }
+
+    for (const r of data.rooms ?? []) {
+      const prev = roomStamp.current.get(r.id);
+      if (r.last && !r.last.mine && !first && (!prev || prev < r.last.at) && (!open || room !== r.id)) {
+        push({
+          kind: 'message',
+          title: `${r.peer.nick} · Masa ${r.peer.tbl.replace('masa-', '')}`,
+          body: r.last.body,
+          go: () => { setOpen(true); setRoom(r.id); },
+        });
+      }
+      if (r.last) roomStamp.current.set(r.id, r.last.at);
+    }
+  }, [data, open, room]);
+
+  // Sekme başlığında bekleyen bildirim sayısı.
+  useEffect(() => {
+    const n = unread + (data?.requestsIn?.length || 0);
+    document.title = n > 0 ? `(${n}) ${baseTitle.current}` : baseTitle.current;
+  }, [unread, data?.requestsIn]);
+
   const peer = data?.rooms?.find((r) => r.id === room)?.peer;
 
   return (
     <>
+      {toasts.length > 0 && (
+        <div className="sh-toasts" aria-live="polite">
+          {toasts.map((t) => (
+            <button
+              key={t.id}
+              className="sh-toast"
+              onClick={() => { t.go(); setToasts((p) => p.filter((x) => x.id !== t.id)); }}
+            >
+              <span className="sh-toast-avatar" aria-hidden="true">
+                {t.kind === 'request' ? '?' : t.title.slice(0, 1).toUpperCase()}
+              </span>
+              <span className="sh-toast-body">
+                <b>{t.title}</b>
+                <small>{t.body}</small>
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
       <button
         className="sh-fab"
         aria-label={unread > 0 ? `Sohbet, ${unread} okunmamış mesaj` : 'Masalarla sohbet'}

@@ -2,6 +2,15 @@
 .oh-felt {
   --felt: #1f6b4a;
   --card-w: min(76vw, 290px);
+  /* Çuha sayfası kendi renk düzenine sahiptir (açık kartlar + koyu yazı). Telefonun karanlık modunda
+     oyuncu.css'in değişkenleri dönmesin diye burada aydınlık değerlere sabitlenir; böylece masa kartları
+     ve sohbet paneli her cihazda bilgisayardaki gibi görünür. */
+  --paper: #fff7ee;
+  --white: #ffffff;
+  --ink: #1c1233;
+  --muted: #6a5f80;
+  --line: #eadfd3;
+  --shadow: #1c1233;
   min-height: 100svh;
   display: flex;
   flex-direction: column;

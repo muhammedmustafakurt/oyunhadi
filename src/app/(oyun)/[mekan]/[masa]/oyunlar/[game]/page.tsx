@@ -13,6 +13,7 @@ import ResetTable from '@/components/oyun/ResetTable';
 import Presence from '@/components/oyun/Presence';
 import GameBand from '@/components/oyun/GameBand';
 import VenueBadge from '@/components/oyun/VenueBadge';
+import ChatWidget from '@/components/sohbet/ChatWidget';
 import { findCafe, hasTable } from '@/lib/rooms';
 import { GAMES } from '@/lib/games';
 
@@ -53,6 +54,8 @@ export default async function TablePlay({ params }: PageProps<'/[mekan]/[masa]/o
         <ResetTable cafe={mekan} masa={masa} game={g.id} />
         <p className="oh-play-back"><Link href={back}>← Tüm oyunlar</Link></p>
       </div>
+
+      <ChatWidget cafe={mekan} masa={masa} no={masa.replace('masa-', '')} />
     </main>
   );
 }
