@@ -15,7 +15,7 @@ const dayStart = (ms) => { const d = new Date(ms); d.setUTCHours(0, 0, 0, 0); re
 // son N gün: her gün için oyun ve oyuncu sayısı (oyun başına başlangıçtaki oyuncu sayısı toplanır).
 export async function weekDocs(biz, days = 7) {
   const from = dayStart(Date.now()) - (days - 1) * DAY;
-  const rows = await all('SELECT at, players FROM play_logs WHERE biz_id = ? AND at >= ?', [biz, from]);
+  const rows = await all('SELECT at, players FROM play_logs WHERE biz_id = ? AND at >= ?', biz, from);
   const out = Array.from({ length: days }, (_, i) => {
     const t = from + i * DAY;
     return { ms: t, day: GN[dow(t)], oyun: 0, oyuncu: 0 };
@@ -30,7 +30,7 @@ export async function weekDocs(biz, days = 7) {
 // Son N günün saat yoğunluğu (2 saatlik dilimler: 10–12, 12–14, … 22–00).
 export async function hoursDocs(biz, days = 7) {
   const from = dayStart(Date.now()) - (days - 1) * DAY;
-  const rows = await all('SELECT at FROM play_logs WHERE biz_id = ? AND at >= ?', [biz, from]);
+  const rows = await all('SELECT at FROM play_logs WHERE biz_id = ? AND at >= ?', biz, from);
   const out = Array.from({ length: 7 }, (_, i) => ({ saat: String(12 + i * 2), oyun: 0 }));
   for (const r of rows) {
     const h = new Date(Number(r.at)).getUTCHours();
@@ -43,7 +43,7 @@ export async function hoursDocs(biz, days = 7) {
 // Oyun dağılımı: son N günde hangi oyun kaç kez başladı.
 export async function gameDocs(biz, days = 7) {
   const from = dayStart(Date.now()) - (days - 1) * DAY;
-  const rows = await all('SELECT game, count(*)::int AS n FROM play_logs WHERE biz_id = ? AND at >= ? GROUP BY game ORDER BY n DESC', [biz, from]);
+  const rows = await all('SELECT game, count(*)::int AS n FROM play_logs WHERE biz_id = ? AND at >= ? GROUP BY game ORDER BY n DESC', biz, from);
   return rows.map((r) => ({ game: r.game, oyun: Number(r.n) }));
 }
 
@@ -51,7 +51,7 @@ export async function gameDocs(biz, days = 7) {
 export async function monthDocs(biz, months = 6) {
   const now = new Date();
   const from = dayStart(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (months - 1), 1));
-  const rows = await all('SELECT at FROM play_logs WHERE biz_id = ? AND at >= ?', [biz, from]);
+  const rows = await all('SELECT at FROM play_logs WHERE biz_id = ? AND at >= ?', biz, from);
   const start = new Date(from);
   const out = Array.from({ length: months }, (_, i) => {
     const d = new Date(start.getUTCFullYear(), start.getUTCMonth() + i, 1);
@@ -67,7 +67,7 @@ export async function monthDocs(biz, months = 6) {
 
 // Bugünkü oyunlar: masa bazında sayı.
 export async function todayByTable(biz) {
-  const rows = await all('SELECT masa, count(*)::int AS n FROM play_logs WHERE biz_id = ? AND at >= ? GROUP BY masa', [biz, todayStart()]);
+  const rows = await all('SELECT masa, count(*)::int AS n FROM play_logs WHERE biz_id = ? AND at >= ? GROUP BY masa', biz, todayStart());
   return new Map(rows.map((r) => [String(r.masa), Number(r.n)]));
 }
 
@@ -80,7 +80,7 @@ const nowSeen = (s) => s.phase === 'play' && s.seats.some((x) => !x.left && Date
 
 export async function tableRows(biz, tables) {
   const [rooms, today] = await Promise.all([
-    all('SELECT tbl, game, state FROM game_rooms WHERE biz_id = ?', [biz]),
+    all('SELECT tbl, game, state FROM game_rooms WHERE biz_id = ?', biz),
     todayByTable(biz),
   ]);
   const live = new Map();
