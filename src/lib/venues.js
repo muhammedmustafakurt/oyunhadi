@@ -85,7 +85,7 @@ export async function updateVenue(id, patch = {}) {
   if (!parts.length) return getVenue(id);
   parts.push(['updated_at', Date.now()]);
   const set = parts.map(([c], i) => `${c} = $${i + 1}`).join(', ');
-  await run(`UPDATE venues SET ${set} WHERE id = $${parts.length + 1}`, [...parts.map(([, v]) => v), id]);
+  await run(`UPDATE venues SET ${set} WHERE id = $${parts.length + 1}`, ...parts.map(([, v]) => v), id);
   return getVenue(id);
 }
 
