@@ -1,0 +1,158 @@
+/* Masa ekranı: yeşil çuha üstünde oyun destesi (kart destesi tasarımı, karakter çizimleri). */
+.oh-felt {
+  --felt: #1f6b4a;
+  --card-w: min(76vw, 290px);
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--felt);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Ccircle cx='1' cy='1' r='1' fill='%23ffffff' fill-opacity='.06'/%3E%3C/svg%3E");
+  color: #fff;
+  overflow-x: hidden;
+}
+.oh-felt :where(a) { color: #fff; }
+.felt-top { display: flex; align-items: center; gap: 10px; padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 0; max-width: 560px; width: 100%; margin: 0 auto; }
+.felt-name { display: grid; font-weight: 800; line-height: 1.15; min-width: 0; }
+.felt-name small { font-weight: 500; font-size: .8rem; opacity: .8; }
+.felt-seat { margin-left: auto; flex: none; padding: 5px 12px; border-radius: 999px; background: var(--accent); color: var(--ink); font-weight: 800; border: 2.5px solid var(--ink); box-shadow: 0 3px 0 var(--ink); transform: rotate(3deg); }
+.felt-intro { max-width: 560px; width: 100%; margin: 0 auto; padding: 18px 16px 0; }
+.felt-intro h1 { margin: 0; font-size: clamp(1.8rem, 8.5vw, 2.4rem); line-height: 1; letter-spacing: -.03em; font-weight: 800; }
+.felt-intro p { margin: 8px 0 0; opacity: .85; font-size: .95rem; max-width: 34ch; }
+.felt-news { max-width: 528px; margin: 14px auto 0; width: calc(100% - 32px); padding: 9px 12px; border-radius: 12px; background: rgba(0, 0, 0, .22); font-size: .88rem; line-height: 1.35; }
+.felt-news b { display: inline-block; margin-right: 6px; padding: 1px 8px; border-radius: 999px; background: var(--accent); color: var(--ink); font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; }
+.felt-foot { margin-top: auto; color: rgba(255, 255, 255, .7); }
+.felt-foot a { color: #fff; }
+
+.dk { display: grid; gap: 14px; padding-top: 10px; }
+.dk-rail {
+  list-style: none; margin: 0;
+  display: flex;
+  overflow-x: auto; overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory; scrollbar-width: none;
+  padding: 26px calc(50% - var(--card-w) / 2) 30px;
+}
+.dk-rail::-webkit-scrollbar { display: none; }
+.dk-slot {
+  flex: none; width: var(--card-w); scroll-snap-align: center;
+  margin: 0 -14px; /* yan kartlar ortadakinin altına girsin */
+  position: relative; z-index: 1;
+  opacity: .8;
+  transform: translateY(14px) scale(.86) rotate(calc(clamp(-1, var(--off), 1) * 6deg));
+  transition: transform .35s cubic-bezier(.2, .8, .2, 1), opacity .35s;
+}
+.dk-slot[data-active="true"] { transform: none; opacity: 1; z-index: 2; }
+
+.dk-card {
+  position: relative; display: flex; flex-direction: column; min-height: 410px; height: 100%;
+  border-radius: 22px; background: #fffdf8; color: var(--ink);
+  border: 3px solid var(--ink); box-shadow: 0 10px 0 rgba(0, 0, 0, .28);
+  overflow: hidden;
+}
+.dk-top { position: relative; height: 196px; display: grid; place-items: center; border-bottom: 3px solid var(--ink); }
+.dk-face { width: 150px; height: 150px; }
+.dk-slot[data-active="true"] .dk-face { animation: dk-wiggle 2.6s ease-in-out infinite; }
+@keyframes dk-wiggle { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-4deg) translateY(-3px); } }
+.dk-corner { position: absolute; top: 8px; left: 10px; display: grid; justify-items: center; font-weight: 800; font-size: 1.25rem; line-height: .95; }
+.dk-corner i { font-style: normal; font-size: 1rem; }
+.dk-corner.br { top: auto; left: auto; bottom: 8px; right: 10px; transform: rotate(180deg); }
+.dk-reward { position: absolute; top: 10px; right: 10px; padding: 3px 9px; border-radius: 999px; background: var(--accent); color: var(--ink); border: 2px solid var(--ink); font-size: .72rem; font-weight: 800; }
+.dk-body { padding: 14px 16px 6px; display: grid; gap: 6px; align-content: start; }
+.dk-body h2 { margin: 0; font-size: 1.65rem; line-height: 1; letter-spacing: -.03em; font-weight: 800; }
+.dk-body p { margin: 0; color: #5b5470; font-size: .92rem; line-height: 1.35; }
+.dk-meta { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.dk-meta li { padding: 2px 9px; border-radius: 999px; background: #f0ebe1; font-size: .78rem; font-weight: 700; }
+.dk-body .dk-prize { margin-top: 4px; padding: 6px 9px; border-radius: 10px; background: #fff4cc; color: var(--ink); font-size: .8rem; font-weight: 700; }
+.dk-play {
+  margin: auto 14px 14px; padding: 12px; border-radius: 14px; text-align: center; text-decoration: none;
+  background: var(--brand); color: #fff !important; font-weight: 800; font-size: 1.05rem;
+  border: 2.5px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+  transition: transform .08s, box-shadow .08s;
+}
+.dk-play:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+.dk-play:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.dk-slot:not([data-active="true"]) .dk-play { pointer-events: none; }
+
+/* Son kart: sırtı dönük kart, yakında gelecek oyunlar */
+.dk-back {
+  background-color: var(--brand); color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M12 2l10 10-10 10L2 12Z' fill='none' stroke='%23ffffff' stroke-opacity='.25' stroke-width='2'/%3E%3C/svg%3E");
+}
+.dk-back-in { margin: 14px; flex: 1; border: 3px solid rgba(255, 255, 255, .7); border-radius: 14px; padding: 18px 16px; display: grid; align-content: center; gap: 12px; background: rgba(28, 18, 51, .35); }
+.dk-back-title { margin: 0; font-size: 1.8rem; font-weight: 800; line-height: .95; letter-spacing: -.03em; }
+.dk-back-in ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-weight: 600; }
+
+.dk-nav { display: flex; align-items: center; justify-content: center; gap: 14px; }
+.dk-arrow { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; border: 2.5px solid var(--ink); background: #fff; color: var(--ink); font: inherit; font-size: 1.5rem; font-weight: 800; line-height: 1; cursor: pointer; box-shadow: 0 3px 0 var(--ink); }
+.dk-arrow:disabled { opacity: .35; cursor: default; }
+.dk-arrow:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.dk-dots { display: flex; gap: 5px; }
+.dk-dots i { width: 7px; height: 7px; border-radius: 4px; background: rgba(255, 255, 255, .35); transition: width .2s; }
+.dk-dots i[data-on="true"] { width: 20px; background: var(--accent); }
+
+.dk-count { max-width: 528px; width: calc(100% - 32px); margin: 6px auto 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 16px; background: rgba(0, 0, 0, .22); font-weight: 700; }
+.dk-step { display: flex; align-items: center; gap: 10px; }
+.dk-step button { width: 38px; height: 38px; border-radius: 11px; border: 2.5px solid var(--ink); background: #fff; color: var(--ink); font: inherit; font-size: 1.3rem; font-weight: 800; cursor: pointer; box-shadow: 0 3px 0 var(--ink); }
+.dk-step button:disabled { opacity: .4; cursor: default; }
+.dk-step button:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.dk-step output { min-width: 82px; text-align: center; font-size: 1.15rem; font-weight: 800; }
+.dk-empty { max-width: 528px; width: calc(100% - 32px); margin: 30px auto; padding: 24px; border-radius: 20px; background: rgba(0, 0, 0, .22); text-align: center; display: grid; gap: 12px; justify-items: center; }
+.dk-empty p { margin: 0; }
+.dk-empty .btn { color: var(--ink); background: #fff; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dk-slot { transition: none; }
+  .dk-slot[data-active="true"] .dk-face { animation: none; }
+}
+
+/* Oyun sayfası başlık bandında karakter çizimi */
+.oh-band-art svg { display: block; width: 100%; height: 100%; }
+
+/* ---------- Açılış animasyonu: deste karıştırılır, yelpaze olur, masaya dağıtılır ---------- */
+.dk-intro {
+  position: fixed; inset: 0; z-index: 50;
+  display: grid; grid-template-rows: auto 1fr auto; justify-items: center;
+  padding: calc(48px + env(safe-area-inset-top, 0px)) 16px calc(28px + env(safe-area-inset-bottom, 0px));
+  background-color: #1f6b4a;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Ccircle cx='1' cy='1' r='1' fill='%23ffffff' fill-opacity='.06'/%3E%3C/svg%3E");
+  color: #fff; cursor: pointer;
+  /* JavaScript çalışmasa da kendiliğinden kaybolur */
+  animation: dk-intro-out .35s ease-in 2.25s forwards;
+}
+.dk-intro.leave { animation: dk-intro-out .35s ease-in forwards; }
+@keyframes dk-intro-out { to { opacity: 0; visibility: hidden; } }
+.dk-intro-title { margin: 0; text-align: center; font-weight: 800; font-size: 2.6rem; line-height: 1; letter-spacing: -.03em; animation: dk-pop .5s cubic-bezier(.2, .9, .3, 1.4) both; }
+.dk-intro-title span { display: block; margin-top: 8px; font-size: 1rem; font-weight: 600; letter-spacing: 0; opacity: .85; }
+@keyframes dk-pop { from { opacity: 0; transform: scale(.6); } }
+.dk-intro-stage { position: relative; width: 100%; max-width: 420px; }
+.dk-intro-card {
+  position: absolute; left: 50%; top: 46%;
+  width: 150px; border-radius: 16px; overflow: hidden;
+  background: #fffdf8; color: var(--ink); border: 3px solid var(--ink); box-shadow: 0 8px 0 rgba(0, 0, 0, .28);
+  transform-origin: 50% 130%;
+  animation: dk-deal-intro 2.3s cubic-bezier(.3, .7, .2, 1) var(--d, 0ms) both;
+}
+.dk-intro-top { height: 118px; display: grid; place-items: center; border-bottom: 3px solid var(--ink); }
+.dk-intro-top svg { width: 92px; height: 92px; }
+.dk-intro-card b { display: block; padding: 10px 12px 14px; font-size: 1.1rem; font-weight: 800; line-height: 1; }
+@keyframes dk-deal-intro {
+  0%   { transform: translate(-50%, 110vh) rotate(calc(var(--i) * -25deg)); }
+  20%  { transform: translate(-50%, -50%) rotate(calc(var(--i) * 3deg)); }
+  28%  { transform: translate(calc(-50% + var(--i) * -16px), -53%) rotate(calc(var(--i) * -5deg)); }
+  36%  { transform: translate(calc(-50% + var(--i) * 16px), -47%) rotate(calc(var(--i) * 5deg)); }
+  44%  { transform: translate(-50%, -50%) rotate(calc(var(--i) * 2deg)); }
+  64%  { transform: translate(calc(-50% + var(--i) * 46px), -50%) rotate(calc(var(--i) * 12deg)); }
+  84%  { transform: translate(calc(-50% + var(--i) * 46px), -52%) rotate(calc(var(--i) * 12deg)); }
+  100% { transform: translate(calc(-50% + var(--i) * 90px), 75vh) rotate(calc(var(--i) * 24deg)); }
+}
+.dk-intro-skip { margin: 0; font-size: .82rem; opacity: .65; }
+
+/* Deste kartları masaya dağıtılarak yerine oturur */
+.dk-card { animation: dk-deal-in .55s cubic-bezier(.2, .8, .2, 1.1) both; }
+.dk.waiting .dk-card { animation-delay: 2.3s; }
+.dk.dealt .dk-card { animation-delay: var(--deal, 0ms); }
+@keyframes dk-deal-in { from { opacity: 0; transform: translateY(180px) rotate(-10deg) scale(.9); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .dk-intro { display: none; }
+  .dk-card { animation: none; }
+}

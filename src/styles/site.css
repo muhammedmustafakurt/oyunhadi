@@ -1,0 +1,60 @@
+/* Tanıtım sitesi. Düzen gdevelop.io'dan esinlendi (kalın başlıklar, kayan oyun kartları, hap düğmeler, uçuşan
+   oyun nesneleri); renkler açık ve canlı: krem zemin, beyaz kartlar, oyun kartlarından gelen renkli bantlar.
+   Yalnızca site dosyaları taranır. */
+@import 'tailwindcss' source(none);
+@source '../app/(site)';
+@source '../components/site';
+@source '../lib/site.ts';
+@source '../lib/blog.ts';
+
+@import './site-utility.css' layer(components);
+
+@plugin "@tailwindcss/forms" {
+  strategy: base;
+}
+
+@theme {
+  --font-sans: var(--font-body), Inter, system-ui, sans-serif;
+  --font-display: var(--font-head), var(--font-body), system-ui, sans-serif;
+
+  /* Zeminler */
+  --color-cream: #fff8f0;
+  --color-sand: #fff0e0;
+  --color-paper: #ffffff;
+  --color-line: #ecdfd0;
+
+  /* Metin */
+  --color-ink: #1c1233;
+  --color-muted: #675c7d;
+
+  /* Canlı renkler (oyun kartlarıyla aynı aile) */
+  --color-coral: #ff4f2e;
+  --color-coral-deep: #e2391a;
+  --color-sun: #ffc83d;
+  --color-grape: #7c3aed;
+  --color-grape-deep: #5b21b6;
+  --color-rose: #e0457f;
+  --color-sky: #12a3bf;
+  --color-leaf: #1f9d6b;
+
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+    50% { transform: translateY(-14px) rotate(calc(var(--r, 0deg) + 6deg)); }
+  }
+}
+
+@layer base {
+  *, ::after, ::before, ::backdrop, ::file-selector-button { border-color: var(--color-line); }
+  body { background: var(--color-cream); color: var(--color-ink); }
+  h1, h2, h3, .font-display { font-family: var(--font-display); letter-spacing: -0.035em; }
+  ::selection { background: var(--color-sun); color: var(--color-ink); }
+}
+
+/* AOS animasyonu: kaydırınca hafifçe büyüyerek belirme */
+[data-aos="zoom-y-out"] { transform: scaleX(1.03); opacity: 0; transition-property: transform, opacity; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float { animation: none; }
+}

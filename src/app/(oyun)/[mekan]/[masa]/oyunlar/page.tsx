@@ -1,0 +1,55 @@
+import { notFound } from 'next/navigation';
+import GameDeck, { type DeckGame } from '@/components/oyun/GameDeck';
+import VenueBadge from '@/components/oyun/VenueBadge';
+import { findCafe, hasTable } from '@/lib/rooms';
+import { GAMES } from '@/lib/games';
+import { SPINE } from '@/lib/spines';
+
+export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }: PageProps<'/[mekan]/[masa]/oyunlar'>) {
+  const { mekan } = await params;
+  const v = await findCafe(mekan);
+  return { title: `${v ? v.name : 'Oyunlar'} · Masa oyunları` };
+}
+
+// Masanın ana sayfası (karekod okutulunca açılır): yeşil çuha üstünde oyun destesi.
+export default async function TableGames({ params }: PageProps<'/[mekan]/[masa]/oyunlar'>) {
+  const { mekan, masa } = await params;
+  const v = await findCafe(mekan);
+  if (!v || !hasTable(v, masa)) notFound();
+  const no = masa.replace('masa-', '');
+  const base = `/${mekan}/${masa}/oyunlar`;
+
+  const games: DeckGame[] = GAMES.filter((g) => g.play && v.games.includes(g.id)).map((g) => ({
+    id: g.id, name: g.name, note: g.note, players: g.players, minutes: g.minutes,
+    bg: SPINE[g.id][0], fg: SPINE[g.id][1], href: `${base}/${g.id}`,
+    reward: v.reward?.game === g.id ? `${v.reward.goal}: ${v.reward.prize}` : undefined,
+  }));
+  // Ödüllü oyun destenin en üstünde
+  games.sort((a, b) => Number(!!b.reward) - Number(!!a.reward));
+  const soon = GAMES.filter((g) => !g.play).map((g) => g.name);
+
+  return (
+    <main className="oh-felt">
+      <header className="felt-top">
+        <VenueBadge venue={v} />
+        <span className="felt-name">{v.name}<small>{v.city}</small></span>
+        <span className="felt-seat">Masa {no}</span>
+      </header>
+
+      <div className="felt-intro">
+        <h1>Desteden bir oyun çek</h1>
+        <p>Kartları kaydırın, beğendiğinizi açın. Masadaki herkes kendi telefonundan katılır.</p>
+      </div>
+
+      {v.announcement && (
+        <p className="felt-news"><b>Duyuru</b> {v.announcement.title}. {v.announcement.body}</p>
+      )}
+
+      <GameDeck games={games} soon={soon} introKey={`${mekan}-${masa}`} table={no} />
+
+      <footer className="oh-foot felt-foot"><a href="/">oyunhadi</a> ile oynanıyor</footer>
+    </main>
+  );
+}

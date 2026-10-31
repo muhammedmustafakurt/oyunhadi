@@ -1,0 +1,148 @@
+/* Site bileşen sınıfları: hap düğmeler, kartlar, renkli bantlar ve süs arka planları. */
+
+/* ---------- Düğmeler ---------- */
+.btn, .btn-sm {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  border-radius: 999px; font-weight: 700; white-space: nowrap; letter-spacing: -.01em;
+  transition: transform .15s ease, background-color .15s ease, box-shadow .15s ease, color .15s ease;
+}
+.btn { padding: .85rem 1.6rem; font-size: 1rem; }
+.btn-sm { padding: .5rem 1.05rem; font-size: .875rem; }
+.btn:active, .btn-sm:active { transform: translateY(1px) scale(.98); }
+
+.btn-primary { background: var(--color-coral); color: #fff; box-shadow: 0 6px 18px -6px rgba(255, 79, 46, .6); }
+.btn-primary:hover { background: var(--color-coral-deep); box-shadow: 0 10px 26px -8px rgba(255, 79, 46, .7); }
+.btn-dark { background: var(--color-ink); color: #fff; }
+.btn-dark:hover { background: #33255a; }
+.btn-outline { color: var(--color-ink); box-shadow: inset 0 0 0 2px var(--color-ink); }
+.btn-outline:hover { background: var(--color-ink); color: #fff; }
+.btn-white { background: #fff; color: var(--color-ink); }
+.btn-white:hover { background: var(--color-sand); }
+.btn-ghost { color: #fff; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .9); }
+.btn-ghost:hover { background: rgba(255, 255, 255, .15); }
+.btn:focus-visible, .btn-sm:focus-visible { outline: 3px solid var(--color-grape); outline-offset: 3px; }
+
+/* ---------- Kartlar ---------- */
+.card {
+  background: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 0 rgba(28, 18, 51, .04), 0 12px 30px -18px rgba(28, 18, 51, .25);
+}
+.card-hover { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+.card-hover:hover { transform: translateY(-4px); border-color: var(--color-ink); box-shadow: 0 18px 40px -20px rgba(28, 18, 51, .45); }
+
+/* ---------- Arka planlar (renk geçişi yok, düz renkler) ---------- */
+.hero-light { background-color: var(--color-cream); }
+/* İnce ızgara çizgileri (keskin çizgi, geçiş yok) */
+.grid-lines {
+  background-image:
+    linear-gradient(rgba(28, 18, 51, .06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(28, 18, 51, .06) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+.grid-lines-light {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, .12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, .12) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+/* Düz renkli bantlar */
+.band-grape { background-color: var(--color-grape); color: #fff; }
+.band-coral { background-color: var(--color-coral); color: #fff; }
+.band-sun { background-color: var(--color-sun); color: var(--color-ink); }
+/* Konfeti noktaları (renkli bantların üstünde, keskin kenarlı) */
+.confetti {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Ccircle cx='18' cy='36' r='4' fill='%23ffc83d'/%3E%3Ccircle cx='45' cy='126' r='3' fill='%235ef2b5'/%3E%3Ccircle cx='76' cy='27' r='4' fill='%23ffffff'/%3E%3Ccircle cx='108' cy='99' r='3' fill='%23ffc83d'/%3E%3Ccircle cx='140' cy='148' r='4' fill='%23ffffff'/%3E%3Ccircle cx='162' cy='50' r='3' fill='%235ef2b5'/%3E%3C/svg%3E");
+  opacity: .7;
+}
+
+/* Vurgulu kelimeler */
+.hl { color: var(--color-grape); }
+.hl-coral { color: var(--color-coral); }
+/* Elle çizilmiş alt çizgi */
+.squiggle { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12'%3E%3Cpath d='M2 8 Q 20 2 38 7 T 78 7 T 118 5' fill='none' stroke='%23ffc83d' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E") bottom / 100% .32em no-repeat; padding-bottom: .08em; }
+
+/* Yatay kaydırma şeridi */
+.rail { scroll-snap-type: x mandatory; scrollbar-width: none; }
+.rail::-webkit-scrollbar { display: none; }
+.rail > * { scroll-snap-align: start; }
+
+/* Form alanları */
+.form-input, .form-textarea, .form-select {
+  width: 100%; border-radius: .9rem; border: 1.5px solid var(--color-line);
+  background: #fff; color: var(--color-ink); padding: .75rem 1rem; font-size: .95rem;
+}
+.form-input::placeholder, .form-textarea::placeholder { color: #a399b5; }
+.form-input:focus, .form-textarea:focus, .form-select:focus { outline: none; border-color: var(--color-grape); box-shadow: 0 0 0 3px rgba(124, 58, 237, .18); }
+.form-checkbox { border-radius: .3rem; border-color: var(--color-line); color: var(--color-grape); }
+
+/* ---------- Ana sayfa: oyun masası ---------- */
+/* Yeşil çuha (masa ekranıyla aynı) */
+.felt {
+  background-color: #1f6b4a;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Ccircle cx='1' cy='1' r='1' fill='%23ffffff' fill-opacity='.07'/%3E%3C/svg%3E");
+  color: #fff;
+}
+/* ---------- Karekod sahnesi (9 sn döngü) ----------
+   0–20%  telefon gelir ve pleksinin üstüne durur
+   22–34% tarama çizgisi geçer
+   34–50% ekran "Masa 5 açıldı" olur, telefon çekilir
+   38–52% kartlar telefondan çıkıp yelpaze gibi açılır, 88%'e kadar bekler, sonra toplanır */
+.scan-scene { --cycle: 9s; }
+.fan-card {
+  --spread: 34px;
+  transform-origin: 50% 125%;
+  transform: translateX(calc(-50% + var(--i) * var(--spread))) rotate(calc(var(--i) * 11deg));
+  animation: fan-loop var(--cycle) cubic-bezier(.2, .8, .2, 1) var(--d, 0ms) infinite both;
+}
+@media (min-width: 640px) { .fan-card { --spread: 46px; } }
+@keyframes fan-loop {
+  0%, 37% { transform: translate(calc(-50% + 70px), -150px) scale(.18) rotate(-6deg); opacity: 0; }
+  39% { opacity: 1; }
+  54%, 88% { transform: translateX(calc(-50% + var(--i) * var(--spread))) rotate(calc(var(--i) * 11deg)); opacity: 1; }
+  97%, 100% { transform: translate(calc(-50% + 70px), -150px) scale(.18) rotate(-6deg); opacity: 0; }
+}
+.scan-phone { transform: translateX(-50%); opacity: 0; animation: phone-loop var(--cycle) cubic-bezier(.3, .7, .2, 1) infinite both; }
+@keyframes phone-loop {
+  0% { transform: translate(calc(-50% + 170px), 150px) rotate(20deg); opacity: 0; }
+  8% { opacity: 1; }
+  20%, 34% { transform: translate(calc(-50% + 70px), -44px) rotate(-6deg); opacity: 1; }
+  38% { transform: translate(calc(-50% + 70px), -52px) rotate(-6deg) scale(1.05); opacity: 1; }
+  50%, 100% { transform: translate(calc(-50% + 190px), 60px) rotate(18deg); opacity: 0; }
+}
+.scan-line { top: 0; opacity: 0; animation: line-loop var(--cycle) linear infinite both; }
+@keyframes line-loop {
+  0%, 21% { top: 0; opacity: 0; }
+  22% { top: 0; opacity: 1; }
+  28% { top: calc(100% - 3px); opacity: 1; }
+  33% { top: 0; opacity: 1; }
+  34%, 100% { top: 0; opacity: 0; }
+}
+.scan-ok { opacity: 0; animation: ok-loop var(--cycle) steps(1) infinite both; }
+@keyframes ok-loop { 0%, 34% { opacity: 0; } 35%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+.scan-stand { transform: translateX(-50%); animation: stand-loop var(--cycle) ease-in-out infinite both; }
+@keyframes stand-loop {
+  0%, 40% { transform: translateX(-50%); opacity: 1; }
+  52%, 88% { transform: translate(-50%, 34px) scale(.85); opacity: .55; }
+  100% { transform: translateX(-50%); opacity: 1; }
+}
+.scan-seat { animation: seat-loop var(--cycle) cubic-bezier(.3, 1.6, .5, 1) infinite both; }
+@keyframes seat-loop { 0%, 40% { transform: rotate(6deg) scale(0); } 46%, 90% { transform: rotate(6deg) scale(1); } 96%, 100% { transform: rotate(6deg) scale(0); } }
+@keyframes wiggle { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-5deg) translateY(-3px); } }
+.animate-wiggle { animation: wiggle 2.6s ease-in-out infinite; }
+/* Sohbet mesajları sırayla belirir */
+.chat-in { animation: chat-in .45s ease-out both; }
+@keyframes chat-in { from { opacity: 0; transform: translateY(10px); } }
+/* İskambil kartı adımlar */
+.play-card { position: relative; background: #fff; border: 2.5px solid var(--color-ink); border-radius: 18px; box-shadow: 0 5px 0 var(--color-ink); }
+.play-card .rank { position: absolute; left: 18px; top: 16px; display: grid; justify-items: center; font-family: var(--font-display); font-weight: 800; font-size: 30px; line-height: .9; }
+.play-card .rank i { font-style: normal; font-size: 22px; }
+.play-card .rank.br { left: auto; top: auto; right: 18px; bottom: 16px; transform: rotate(180deg); }
+.btn-felt { background: var(--color-coral); color: #fff; box-shadow: 0 5px 0 var(--color-ink); border: 2.5px solid var(--color-ink); }
+.btn-felt:hover { background: var(--color-coral-deep); }
+.btn-sun { background: var(--color-sun); color: var(--color-ink); border: 2.5px solid var(--color-ink); }
+@media (prefers-reduced-motion: reduce) {
+  .fan-card, .chat-in, .animate-wiggle, .scan-stand, .scan-seat, .scan-line, .scan-ok { animation: none; }
+  .scan-phone { display: none; }
+}
