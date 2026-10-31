@@ -39,8 +39,8 @@ export default async function TableGames({ params }: PageProps<'/[mekan]/[masa]/
       </header>
 
       <div className="felt-intro">
-        <h1>Desteden bir oyun çek</h1>
-        <p>Kartları kaydırın, beğendiğinizi açın. Masadaki herkes kendi telefonundan katılır.</p>
+        <h1>Hadi, bir oyun seçin!</h1>
+        <p>{v.welcome}</p>
       </div>
 
       {v.announcement && (

@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 const PRESETS = [
   ['#ff4f2e', '#ffc83d'], ['#7c3aed', '#22d3ee'], ['#0f766e', '#fde047'], ['#1d4ed8', '#f472b6'], ['#b91c1c', '#fbbf24'], ['#166534', '#f97316'],
 ];
+const ink = '#1c1233'; // oyuncu ekranındaki --ink rengi (oyuncu.css)
 
 // Logo ve renk seçimi; sağda oyuncu ekranının canlı önizlemesi. TASARIM AŞAMASI: kaydedilmez.
 export default function BrandEditor({ venue }: { venue: { name: string; initials: string; color: string; accent: string; welcome: string } }) {
@@ -72,26 +73,42 @@ export default function BrandEditor({ venue }: { venue: { name: string; initials
         </CardContent>
       </Card>
 
-      {/* Canlı önizleme: oyuncu ekranının üst kısmı */}
+      {/* Canlı önizleme: masanın oyun seçme sayfası (oyun-deste.css'teki .oh-felt yapısının sade kopyası) */}
       <div className="lg:sticky lg:top-20 lg:h-fit">
-        <p className="text-muted-foreground mb-2 text-sm font-medium">Önizleme</p>
+        <p className="text-muted-foreground mb-2 text-sm font-medium">Önizleme · masa ekranı</p>
         <div className="mx-auto w-[280px] rounded-[2.4rem] bg-zinc-900 p-2.5 shadow-xl">
-          <div className="overflow-hidden rounded-[2rem] bg-[#fff7ee] pb-4">
-            <div className="relative overflow-hidden rounded-b-3xl border-b-2 border-zinc-900 px-4 pt-8 pb-5 text-white" style={{ background: color }}>
-              <svg className="absolute -right-2 top-5 h-14 w-14 rotate-12" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="10" fill={accent} /><circle cx="13" cy="13" r="4" fill={color} /><circle cx="27" cy="27" r="4" fill={color} /></svg>
-              <div className="flex items-center gap-2">
-                <span className="grid size-9 place-items-center rounded-xl border-2 border-zinc-900 bg-white text-xs font-extrabold" style={{ color }}>{initials}</span>
-                <span className="text-sm leading-tight font-bold">{name}</span>
-              </div>
-              <span className="mt-5 inline-block -rotate-3 rounded-full border-2 border-zinc-900 px-3 py-0.5 text-xs font-extrabold text-zinc-900" style={{ background: accent }}>Masa 5</span>
-              <p className="mt-2 text-2xl leading-[0.95] font-extrabold tracking-tight">Hadi, bir oyun seçin!</p>
-              <p className="mt-2 text-xs opacity-90">{welcome}</p>
+          <div
+            className="overflow-hidden rounded-[2rem]"
+            style={{
+              backgroundColor: '#1f6b4a',
+              backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Ccircle cx='1' cy='1' r='1' fill='%23ffffff' fill-opacity='.06'/%3E%3C/svg%3E\")",
+              color: '#fff',
+            }}
+          >
+            <div className="flex items-center gap-2 px-3 pt-5">
+              <span className="grid size-9 flex-none place-items-center rounded-xl border-2 text-xs font-extrabold" style={{ background: '#fff', color, borderColor: ink }}>{initials}</span>
+              <span className="grid min-w-0 text-sm leading-tight font-extrabold">
+                {name}
+                <small className="text-[10px] font-medium opacity-80">Kadıköy, İstanbul</small>
+              </span>
+              <span className="ml-auto flex-none rotate-3 rounded-full border-2 px-2.5 py-1 text-[11px] font-extrabold" style={{ background: accent, color: ink, borderColor: ink, boxShadow: `0 2px 0 ${ink}` }}>Masa 5</span>
             </div>
-            <div className="space-y-2 px-3 pt-3">
-              {[['Tabu', '#e0457f'], ['Bil Bakalım', '#1f9d6b'], ['Casus', '#7a4b2a']].map(([n, c]) => (
-                <div key={n} className="rounded-xl border-2 border-zinc-900 px-3 py-3 text-sm font-extrabold text-white" style={{ background: c }}>{n}</div>
-              ))}
-              <div className="rounded-xl border-2 border-zinc-900 px-3 py-2.5 text-center text-sm font-bold text-white" style={{ background: color }}>Masaya katıl</div>
+            <div className="px-3 pt-4">
+              <p className="m-0 text-[1.35rem] font-extrabold leading-none" style={{ letterSpacing: '-.03em' }}>Hadi, bir oyun seçin!</p>
+              <p className="mt-1.5 text-[11px] opacity-85">{welcome}</p>
+            </div>
+            <div className="px-7 pt-4 pb-5">
+              <div className="overflow-hidden rounded-[16px] border-2" style={{ borderColor: ink, backgroundColor: '#fffdf8', color: ink, boxShadow: `0 6px 0 rgba(0, 0, 0, .28)` }}>
+                <div className="relative grid h-[118px] place-items-center" style={{ background: '#e0457f', borderBottom: `2px solid ${ink}` }}>
+                  <span className="rotate-6 rounded-xl border-2 bg-white px-3 py-2 text-2xl font-black" style={{ borderColor: ink, color: '#e0457f' }}>♠</span>
+                  <span className="absolute top-1.5 left-2.5 grid justify-items-center text-[11px] leading-none font-black">T<br /><i className="not-italic opacity-80">tabu</i></span>
+                </div>
+                <div className="px-3.5 pt-2.5 pb-1">
+                  <p className="m-0 text-xl font-extrabold" style={{ letterSpacing: '-.03em' }}>Tabu</p>
+                  <p className="m-0 mt-1 text-[11px] leading-snug" style={{ color: '#5b5470' }}>Kelimeleri anlatın, süreyi rakip takım tutar.</p>
+                </div>
+                <button type="button" className="mx-3 mb-3 block w-[calc(100%-1.5rem)] rounded-[12px] border-2 py-2.5 text-center text-sm font-extrabold text-white" style={{ background: color, borderColor: ink, boxShadow: `0 3px 0 ${ink}` }}>Oyna</button>
+              </div>
             </div>
           </div>
         </div>
