@@ -41,6 +41,7 @@ export default async function TableGames({ params }: PageProps<'/[mekan]/[masa]/
       <div className="felt-intro">
         <h1>Hadi, bir oyun seçin!</h1>
         <p>{v.welcome}</p>
+        <a className="felt-chat" href={`/${mekan}/${masa}/sohbet`}>Masalarla sohbet et →</a>
       </div>
 
       {v.announcement && (

@@ -5,6 +5,7 @@ import {
   IconGift,
   IconChartBar,
   IconSpeakerphone,
+  IconMessages,
   IconPalette,
   IconCreditCard,
   IconSettings,
@@ -21,6 +22,7 @@ export const NAV_GROUPS = [
       { title: 'Ödüller', url: '/panel/oduller', icon: IconGift },
       { title: 'İstatistikler', url: '/panel/istatistik', icon: IconChartBar },
       { title: 'Duyurular', url: '/panel/duyurular', icon: IconSpeakerphone },
+      { title: 'Sosyal Sohbet', url: '/panel/sohbet', icon: IconMessages },
     ],
   },
   {

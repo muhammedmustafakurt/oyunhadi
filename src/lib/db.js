@@ -70,6 +70,90 @@ const SCHEMA = [
     players INTEGER NOT NULL DEFAULT 0,
     at BIGINT NOT NULL
   )`,
+
+  // ---- Masalar arası sohbet (chat) ----
+
+  // İşletme sohbet ayarları: satır yoksa varsayılanlar (açık, açık mod kapalı, 24 saat saklama) geçerlidir.
+  `CREATE TABLE IF NOT EXISTS chat_settings (
+    biz_id INTEGER PRIMARY KEY,
+    enabled BOOLEAN NOT NULL DEFAULT true,
+    open_mode BOOLEAN NOT NULL DEFAULT false,
+    retention_hours INTEGER NOT NULL DEFAULT 24,
+    updated_at BIGINT NOT NULL
+  )`,
+  // Ziyaretçi oturumu: cihaz (pid) + masa başına tek satır. token sunucuda üretilir, istemciye bir kez verilir.
+  `CREATE TABLE IF NOT EXISTS chat_sessions (
+    id SERIAL PRIMARY KEY,
+    biz_id INTEGER NOT NULL,
+    tbl TEXT NOT NULL,
+    pid TEXT NOT NULL,
+    token TEXT NOT NULL UNIQUE,
+    nick TEXT NOT NULL,
+    bio TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'active', -- active | paused | left | kicked
+    seen_at BIGINT NOT NULL,
+    created_at BIGINT NOT NULL
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS chat_sessions_pid ON chat_sessions (biz_id, tbl, pid)`,
+  `CREATE INDEX IF NOT EXISTS chat_sessions_live ON chat_sessions (biz_id, status, seen_at)`,
+  // Sohbet isteği: bir oturumdan diğerine. Aynı çift arasında tek bekleyen istek olabilir.
+  `CREATE TABLE IF NOT EXISTS chat_requests (
+    id SERIAL PRIMARY KEY,
+    biz_id INTEGER NOT NULL,
+    from_id INTEGER NOT NULL,
+    to_id INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending', -- pending | accepted | rejected | cancelled
+    created_at BIGINT NOT NULL,
+    decided_at BIGINT
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS chat_requests_pending ON chat_requests (from_id, to_id) WHERE status = 'pending'`,
+  `CREATE INDEX IF NOT EXISTS chat_requests_to ON chat_requests (to_id, status)`,
+  `CREATE INDEX IF NOT EXISTS chat_requests_from ON chat_requests (from_id, status, created_at)`,
+  // İki oturum arasındaki özel oda. a_id < b_id yazılır; aynı çift için tek aktif oda.
+  `CREATE TABLE IF NOT EXISTS chat_rooms (
+    id SERIAL PRIMARY KEY,
+    biz_id INTEGER NOT NULL,
+    a_id INTEGER NOT NULL,
+    b_id INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'active', -- active | closed
+    created_at BIGINT NOT NULL,
+    closed_at BIGINT,
+    last_at BIGINT NOT NULL
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS chat_rooms_pair ON chat_rooms (a_id, b_id) WHERE status = 'active'`,
+  `CREATE INDEX IF NOT EXISTS chat_rooms_biz ON chat_rooms (biz_id, status)`,
+  // Mesajlar: yalnızca odanın iki katılımcısı görebilir (yetki API katmanında doğrulanır).
+  `CREATE TABLE IF NOT EXISTS chat_messages (
+    id SERIAL PRIMARY KEY,
+    room_id INTEGER NOT NULL,
+    from_id INTEGER NOT NULL,
+    body TEXT NOT NULL,
+    at BIGINT NOT NULL,
+    seen_at BIGINT
+  )`,
+  `CREATE INDEX IF NOT EXISTS chat_messages_room ON chat_messages (room_id, id)`,
+  `CREATE INDEX IF NOT EXISTS chat_messages_from ON chat_messages (from_id, at)`,
+  // Engelleme: engelleyen, engelleneni listesinde görmez; istek ve mesaj sunucuda reddedilir.
+  `CREATE TABLE IF NOT EXISTS chat_blocks (
+    id SERIAL PRIMARY KEY,
+    biz_id INTEGER NOT NULL,
+    by_id INTEGER NOT NULL,
+    target_id INTEGER NOT NULL,
+    created_at BIGINT NOT NULL
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS chat_blocks_uniq ON chat_blocks (by_id, target_id)`,
+  // Şikâyet: panelde işletme sahibi görür; mesaj içeriği kopyalanmaz, yalnızca oda referansı tutulur.
+  `CREATE TABLE IF NOT EXISTS chat_reports (
+    id SERIAL PRIMARY KEY,
+    biz_id INTEGER NOT NULL,
+    by_id INTEGER NOT NULL,
+    target_id INTEGER NOT NULL,
+    room_id INTEGER,
+    reason TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'open', -- open | dismissed
+    created_at BIGINT NOT NULL
+  )`,
+  `CREATE INDEX IF NOT EXISTS chat_reports_biz ON chat_reports (biz_id, status, created_at)`,
 ];
 
 // Veritabanı boş açılırsa ilk mekânlar örnek verilerle eklenir. Panel girişi test hesabıyla yapılır

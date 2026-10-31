@@ -3,6 +3,7 @@ import { Bricolage_Grotesque } from 'next/font/google';
 import '@/styles/oyun.css';
 import '@/styles/oyuncu.css';
 import '@/styles/oyun-deste.css';
+import '@/styles/sohbet.css';
 
 // Oyuncu ekranı: masadaki karekod/NFC ile açılan mobil sayfalar. Site ve panelden ayrı kök layout (stiller karışmaz).
 const font = Bricolage_Grotesque({ subsets: ['latin', 'latin-ext'], variable: '--font', display: 'swap' });

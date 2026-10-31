@@ -1,0 +1,53 @@
+import { NextResponse } from 'next/server';
+import {
+  join, state, sendRequest, decideRequest, cancelRequest, sendMessage, closeRoom, blockUser, unblockUser, reportUser, leave, profile, setOpen,
+} from '@/lib/chat';
+
+export const dynamic = 'force-dynamic';
+
+const json = (body, status = 200) => NextResponse.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
+
+// Sohbet durumu yoklaması. Belirteç yoksa/geçersizse { gone } döner; istemci yeni oturum açar.
+export async function GET(req) {
+  try {
+    const q = new URL(req.url).searchParams;
+    return json(await state(q.get('token'), q.get('room'), q.get('after')));
+  } catch (e) {
+    console.error('[chat GET]', e);
+    return json({ error: 'Sunucu hatası.' }, 500);
+  }
+}
+
+export async function POST(req) {
+  let body;
+  try { body = await req.json(); } catch { return json({ error: 'Geçersiz istek.' }, 400); }
+  try {
+    const type = String(body?.type ?? '');
+    if (type === 'join') {
+      const res = await join(body);
+      return json(res, res.status ?? 200);
+    }
+    const token = String(body?.token ?? '');
+    const act = {
+      request: () => sendRequest(token, body.target),
+      accept: () => decideRequest(token, body.id, true),
+      reject: () => decideRequest(token, body.id, false),
+      cancel: () => cancelRequest(token, body.id),
+      send: () => sendMessage(token, body.room, body.body),
+      close: () => closeRoom(token, body.room),
+      block: () => blockUser(token, body.target),
+      unblock: () => unblockUser(token, body.target),
+      report: () => reportUser(token, { targetId: body.target, roomId: body.room, reason: body.reason }),
+      profile: () => profile(token, body.nick, body.bio),
+      open: () => setOpen(token, true),
+      pause: () => setOpen(token, false),
+      leave: () => leave(token),
+    }[type];
+    if (!act) return json({ error: 'Bilinmeyen işlem.' }, 400);
+    const res = await act();
+    return json(res, res.status ?? 200);
+  } catch (e) {
+    console.error('[chat POST]', e);
+    return json({ error: 'Sunucu hatası.' }, 500);
+  }
+}
