@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { IconChevronsDown, IconExternalLink, IconLogout, IconUser, IconCreditCard } from '@tabler/icons-react';
 import {
   Sidebar,
@@ -26,13 +27,18 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { NAV_GROUPS } from './nav';
-import { CURRENT_VENUE } from '@/lib/demo';
+import type { Venue } from '@/lib/venue-types';
 
-// Starter'daki AppSidebar'ın sade hâli: Clerk yerine örnek mekân/kullanıcı.
-export default function AppSidebar() {
+// Panel kenar menüsü: mekân bilgisi oturumdan (venues tablosundan) gelir.
+export default function AppSidebar({ venue: v }: { venue: Venue }) {
   const path = usePathname();
-  const v = CURRENT_VENUE;
+  const router = useRouter();
   const isActive = (url: string) => (url === '/panel' ? path === url : path.startsWith(url));
+
+  const out = async () => {
+    await fetch('/api/panel/logout', { method: 'POST' });
+    router.push('/panel/giris');
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -83,10 +89,10 @@ export default function AppSidebar() {
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger render={<SidebarMenuButton size="lg" className="data-popup-open:bg-sidebar-accent data-popup-open:text-sidebar-accent-foreground" />}>
-                <Avatar className="h-8 w-8 rounded-lg"><AvatarFallback className="rounded-lg">EK</AvatarFallback></Avatar>
+                <Avatar className="h-8 w-8 rounded-lg"><AvatarFallback className="rounded-lg">{v.initials}</AvatarFallback></Avatar>
                 <span className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Elif Kaya</span>
-                  <span className="text-muted-foreground truncate text-xs">elif@hadikafe.com</span>
+                  <span className="truncate font-semibold">{v.name}</span>
+                  <span className="text-muted-foreground truncate text-xs">{v.email || 'mekân sahibi'}</span>
                 </span>
                 <IconChevronsDown className="ml-auto size-4" />
               </DropdownMenuTrigger>
@@ -100,7 +106,7 @@ export default function AppSidebar() {
                   <DropdownMenuItem render={<Link href="/panel/abonelik" />}><IconCreditCard className="mr-2 h-4 w-4" /> Abonelik</DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem render={<Link href="/panel/giris" />}><IconLogout className="mr-2 h-4 w-4" /> Çıkış yap</DropdownMenuItem>
+                <DropdownMenuItem onClick={out}><IconLogout className="mr-2 h-4 w-4" /> Çıkış yap</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>

@@ -3,20 +3,23 @@ import GamesToggle from '@/components/panel/games-toggle';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { GAMES } from '@/lib/games';
 import { SPINE } from '@/lib/spines';
-import { BY_GAME, CURRENT_VENUE } from '@/lib/demo';
+import { gameDocs } from '@/lib/stats';
+import { requireVenue } from '@/lib/venues';
 
 export const metadata = { title: 'Oyunlar' };
 
-export default function GamesPage() {
+export default async function GamesPage() {
+  const v = await requireVenue();
   const spine = SPINE as Record<string, [string, string]>;
+  const plays = new Map((await gameDocs(v.id, 7)).map((g) => [g.game, g.oyun]));
   const games = GAMES.filter((g) => g.play).map((g) => ({
     id: g.id, name: g.name, note: g.note, players: g.players, minutes: g.minutes,
-    color: spine[g.id][0], fg: spine[g.id][1], plays: BY_GAME.find((b) => b.game === g.id)?.oyun ?? 0,
+    color: spine[g.id][0], fg: spine[g.id][1], plays: plays.get(g.id) ?? 0,
   }));
   const soon = GAMES.filter((g) => !g.play);
   return (
     <PageContainer title="Oyunlar" description="Mekânınıza uymayan oyunları kapatın; masalardaki liste anında güncellenir.">
-      <GamesToggle games={games} initial={CURRENT_VENUE.games} />
+      <GamesToggle games={games} initial={v.games} />
       <Card>
         <CardHeader>
           <CardTitle>Yakında eklenecekler</CardTitle>

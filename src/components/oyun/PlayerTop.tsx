@@ -1,4 +1,4 @@
-import type { Venue } from '@/lib/demo';
+import type { Venue } from '@/lib/venue-types';
 import VenueBadge from './VenueBadge';
 
 // Masa ana sayfasının üst satırı: mekân logosu ve adı.

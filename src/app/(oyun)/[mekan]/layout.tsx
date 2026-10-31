@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { findCafe } from '@/lib/rooms';
-import type { Venue } from '@/lib/demo';
+import type { Venue } from '@/lib/venue-types';
 
 // Mekânın renkleri bütün oyuncu sayfalarına buradan yayılır; oyunlar --blue değişkeniyle mekân rengini alır.
 export default async function VenueLayout({ children, params }: LayoutProps<'/[mekan]'>) {

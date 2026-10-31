@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { findCafe, hasTable, nearCafe, readRoom, mutate, view, ROOM_GAMES, MASA_RE, PID_RE } from '@/lib/rooms';
+import { run } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,6 +42,11 @@ export async function POST(req) {
     const a = body.action;
     if (!a || !ACTIONS.has(a.type)) return json({ error: 'Bilinmeyen işlem.' }, 400);
     const res = await mutate(biz.id, body.masa, body.game, body.pid, { type: a.type, name: a.name, from: a.from, to: a.to, target: a.target, yes: a.yes, loc: a.loc, word: a.word, num: a.num, card: a.card, strokes: a.strokes, keep: a.keep, text: a.text, choice: a.choice, ms: a.ms, near: nearCafe(biz, a.geo), noGeo: !a.geo });
+    if (a.type === 'start') {
+      // İstatistikler için oyun başlangıcını kaydet; başarısızsa odayı etkilemesin.
+      run('INSERT INTO play_logs (biz_id, masa, game, players, at) VALUES (?, ?, ?, ?, ?)',
+        biz.id, body.masa, body.game, res.room.state.seats.length, Date.now()).catch(() => {});
+    }
     return json({ ...view(res.room, body.pid, body.game), locked: biz.lat != null, ...(res.error && { error: res.error }) }, res.error ? 409 : 200);
   } catch (e) {
     console.error('[room POST]', e);

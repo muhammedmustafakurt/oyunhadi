@@ -1,10 +1,13 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import LoginForm from '@/components/panel/login-form';
+import { panelVenue } from '@/lib/venues';
 
 export const metadata = { title: 'Giriş' };
 
-// Mekân girişi (starter'daki iki sütunlu giriş ekranı).
-export default function LoginPage() {
+// Mekân girişi (starter'daki iki sütunlu giriş ekranı). Oturum açıksa doğrudan panele.
+export default async function LoginPage() {
+  if (await panelVenue()) redirect('/panel');
   return (
     <div className="relative grid min-h-svh lg:grid-cols-2">
       <div className="relative hidden flex-col justify-between overflow-hidden bg-zinc-900 p-10 text-white lg:flex">

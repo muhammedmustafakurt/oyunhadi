@@ -1,21 +1,39 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 
 type G = { id: string; name: string; note: string; players: string; minutes: string; color: string; fg: string; plays: number };
 
-// Oyun aç/kapa listesi. TASARIM AŞAMASI: seçim kaydedilmez.
+// Oyun aç/kapa listesi. Anında /api/panel/venue'a yazılır, masalardaki liste o anda güncellenir.
 export default function GamesToggle({ games, initial }: { games: G[]; initial: string[] }) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
   const [on, setOn] = useState(() => new Set(initial));
-  const flip = (g: G, v: boolean) => {
-    setOn((s) => { const n = new Set(s); if (v) n.add(g.id); else n.delete(g.id); return n; });
+
+  const flip = async (g: G, v: boolean) => {
+    const next = new Set(on);
+    if (v) next.add(g.id); else next.delete(g.id);
+    setOn(next);
     toast(v ? `${g.name} açıldı` : `${g.name} kapatıldı`, { description: 'Masalardaki oyun listesi anında güncellenir.' });
+    const r = await fetch('/api/panel/venue', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ games: [...next] }),
+    });
+    if (!r.ok) {
+      setOn(on); // geri al
+      toast.error('Kaydedilemedi, tekrar deneyin.');
+      return;
+    }
+    startTransition(() => router.refresh());
   };
+
   return (
-    <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    <ul className={`grid gap-3 sm:grid-cols-2 xl:grid-cols-3 ${pending ? 'opacity-70' : ''}`}>
       {games.map((g) => {
         const active = on.has(g.id);
         return (

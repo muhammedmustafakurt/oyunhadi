@@ -5,14 +5,15 @@ import PrintButton from '@/components/panel/print-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { CURRENT_VENUE } from '@/lib/demo';
+import { requireVenue } from '@/lib/venues';
+
 
 export const metadata = { title: 'Karekod yazdır' };
 export const dynamic = 'force-dynamic';
 
 // Masa karekodları (nfc'deki admin/qr sayfasından uyarlandı): her kod /<mekân>/masa-N/oyunlar adresine açılır.
 export default async function PrintPage({ searchParams }: PageProps<'/panel/masalar/yazdir'>) {
-  const v = CURRENT_VENUE;
+  const v = await requireVenue();
   const sp = await searchParams;
   const n = Math.min(Math.max(parseInt(String(sp.n ?? ''), 10) || v.tables, 1), 60);
 

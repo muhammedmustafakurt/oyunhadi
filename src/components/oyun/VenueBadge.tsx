@@ -1,4 +1,4 @@
-import type { Venue } from '@/lib/demo';
+import type { Venue } from '@/lib/venue-types';
 
 // Mekân logosu; logo yüklenmediyse baş harfler mekân renginde gösterilir.
 export default function VenueBadge({ venue, size = 'md' }: { venue: Venue; size?: 'md' | 'lg' }) {

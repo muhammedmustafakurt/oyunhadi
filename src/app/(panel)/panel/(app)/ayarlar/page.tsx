@@ -1,38 +1,30 @@
 import { IconPlus } from '@tabler/icons-react';
 import PageContainer from '@/components/panel/page-container';
 import LocationCard from '@/components/panel/location-card';
+import SettingsSave from '@/components/panel/settings-save';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardAction } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { CURRENT_VENUE } from '@/lib/demo';
+import { requireVenue } from '@/lib/venues';
 
 export const metadata = { title: 'Ayarlar' };
+export const dynamic = 'force-dynamic';
 
+// Panel kullanıcıları henüz ayrı bir tabloda değil; TASARIM AŞAMASI: tek ekran sahibi + örnek liste.
 const USERS = [
-  { name: 'Elif Kaya', email: 'elif@hadikafe.com', role: 'Sahip', ini: 'EK' },
-  { name: 'Mert Demir', email: 'mert@hadikafe.com', role: 'Garson (kod doğrular)', ini: 'MD' },
+  { name: 'Mekân sahibi', role: 'Sahip' },
 ];
 
-export default function SettingsPage() {
-  const v = CURRENT_VENUE;
+export default async function SettingsPage() {
+  const v = await requireVenue();
   return (
     <PageContainer title="Ayarlar" description="Mekân bilgileri, konum kilidi ve panel kullanıcıları.">
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader><CardTitle>Mekân bilgileri</CardTitle></CardHeader>
-          <CardContent className="grid gap-4">
-            <div className="grid gap-2"><Label htmlFor="n">Mekân adı</Label><Input id="n" defaultValue={v.name} /></div>
-            <div className="grid gap-2">
-              <Label htmlFor="s">Adres (karekodlarda)</Label>
-              <div className="flex items-center gap-1"><span className="text-muted-foreground text-sm">oyunhadi.com/</span><Input id="s" defaultValue={v.slug} className="font-mono" /></div>
-              <p className="text-muted-foreground text-xs">Değiştirirseniz basılı karekodlar çalışmaz; yenilerini yazdırmanız gerekir.</p>
-            </div>
-            <div className="grid gap-2"><Label htmlFor="c">Şehir / ilçe</Label><Input id="c" defaultValue={v.city} /></div>
-            <Button className="w-fit">Kaydet</Button>
-          </CardContent>
+          <SettingsSave name={v.name} city={v.city} slug={v.slug} />
         </Card>
         <Card>
           <CardHeader><CardTitle>Konum</CardTitle><CardDescription>Karekodun fotoğrafını çekip evden oynanmasını önler.</CardDescription></CardHeader>
@@ -42,15 +34,17 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Panel kullanıcıları</CardTitle>
-          <CardDescription>Garsonlar yalnızca ödül kodu doğrulama ekranını görür.</CardDescription>
-          <CardAction><Button variant="outline" size="sm"><IconPlus /> Kullanıcı davet et</Button></CardAction>
+          <CardDescription>Girişte kullanılan hesap: {v.email || 'belirlenmedi'}</CardDescription>
+          <CardAction>
+            <Button variant="outline" size="sm" className="no-print"><IconPlus /> Kullanıcı davet et</Button>
+          </CardAction>
         </CardHeader>
         <CardContent>
           <ul className="divide-y">
-            {USERS.map((u) => (
-              <li key={u.email} className="flex items-center gap-3 py-3">
-                <Avatar><AvatarFallback>{u.ini}</AvatarFallback></Avatar>
-                <div className="min-w-0 flex-1"><p className="font-medium">{u.name}</p><p className="text-muted-foreground truncate text-sm">{u.email}</p></div>
+            {USERS.map((u, i) => (
+              <li key={i} className="flex items-center gap-3 py-3">
+                <Avatar><AvatarFallback>{v.initials || 'MK'}</AvatarFallback></Avatar>
+                <div className="min-w-0 flex-1"><p className="font-medium">{u.name}</p><p className="text-muted-foreground truncate text-sm">{v.email || '—'}</p></div>
                 <Badge variant="outline">{u.role}</Badge>
               </li>
             ))}

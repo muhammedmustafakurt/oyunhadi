@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { IconUpload } from '@tabler/icons-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -8,19 +9,34 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Venue } from '@/lib/venue-types';
 
 const PRESETS = [
   ['#ff4f2e', '#ffc83d'], ['#7c3aed', '#22d3ee'], ['#0f766e', '#fde047'], ['#1d4ed8', '#f472b6'], ['#b91c1c', '#fbbf24'], ['#166534', '#f97316'],
 ];
 const ink = '#1c1233'; // oyuncu ekranındaki --ink rengi (oyuncu.css)
 
-// Logo ve renk seçimi; sağda oyuncu ekranının canlı önizlemesi. TASARIM AŞAMASI: kaydedilmez.
-export default function BrandEditor({ venue }: { venue: { name: string; initials: string; color: string; accent: string; welcome: string } }) {
+// Logo ve renk seçimi; sağda masa ekranının canlı önizlemesi. Kaydet → /api/panel/venue → venues tablosu.
+export default function BrandEditor({ venue }: { venue: Pick<Venue, 'name' | 'initials' | 'color' | 'accent' | 'welcome'> }) {
+  const router = useRouter();
   const [color, setColor] = useState(venue.color);
   const [accent, setAccent] = useState(venue.accent);
   const [name, setName] = useState(venue.name);
   const [welcome, setWelcome] = useState(venue.welcome);
+  const [busy, setBusy] = useState(false);
   const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toLocaleUpperCase('tr')).join('') || venue.initials;
+
+  const save = async () => {
+    setBusy(true);
+    const r = await fetch('/api/panel/venue', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, welcome, color, accent, initials }),
+    });
+    setBusy(false);
+    if (r.ok) { toast('Görünüm kaydedildi', { description: 'Değişiklikler bütün masalarda anında görünür.' }); router.refresh(); }
+    else toast.error('Kaydedilemedi, tekrar deneyin.');
+  };
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
@@ -67,7 +83,7 @@ export default function BrandEditor({ venue }: { venue: { name: string; initials
             </div>
           </div>
           <div className="flex gap-2">
-            <Button onClick={() => toast('Görünüm kaydedildi (önizleme)', { description: 'Kaydetme, veritabanı bağlanınca çalışacak.' })}>Kaydet</Button>
+            <Button onClick={save} disabled={busy}>{busy ? 'Kaydediliyor…' : 'Kaydet'}</Button>
             <Button variant="ghost" onClick={() => { setColor(venue.color); setAccent(venue.accent); setName(venue.name); setWelcome(venue.welcome); }}>Geri al</Button>
           </div>
         </CardContent>

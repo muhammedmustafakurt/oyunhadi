@@ -2,7 +2,7 @@
 // telefonlar yalnızca kendi sırasında hamle isteyebilir. Durum veritabanında tutulur (sunucusuz ortamda
 // bellek paylaşılmadığı için), istemciler kısa aralıkla sürüm numarasını sorar.
 import { get, run } from './db';
-import { findVenue } from './demo';
+import { getVenueBySlug } from './venues';
 import * as E from './emlak';
 import * as C from './chess';
 import * as S from './spyfall';
@@ -26,9 +26,8 @@ const clean = (n) => String(n ?? '').replace(/[<>]/g, '').trim().slice(0, 16);
 const die = () => 1 + Math.floor(Math.random() * 6);
 const sq = (p) => Array.isArray(p) && p.length === 2 && p.every((n) => Number.isInteger(n) && n >= 0 && n < 8);
 
-// Mekân bilgisi şimdilik örnek verilerden gelir (src/lib/demo.ts); veritabanı bağlanınca buradan okunacak.
-// Kayıtlı olmayan masa numarasında oda açılmaz.
-export const findCafe = async (slug) => findVenue(slug);
+// Mekân bilgisi veritabanından gelir (src/lib/venues.js); kayıtlı olmayan masa numarasında oda açılmaz.
+export const findCafe = async (slug) => getVenueBySlug(slug);
 export const hasTable = (venue, masa) => MASA_RE.test(masa) && Number(masa.slice(5)) >= 1 && Number(masa.slice(5)) <= venue.tables;
 
 // Kafenin konumu girilmişse oyuncunun telefonu bu yarıçap (metre) içinde olmalı; GPS sapması kadar pay bırakılır.
