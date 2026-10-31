@@ -28,7 +28,7 @@ export async function GET(req) {
     return json({ ...view(room, q.pid, q.game), locked: biz.lat != null });
   } catch (e) {
     console.error('[room GET]', e);
-    return json({ error: 'Sunucu hatası: ' + (e?.message || e) }, 500);
+    return json({ error: 'Sunucu hatası.' }, 500);
   }
 }
 
@@ -44,6 +44,6 @@ export async function POST(req) {
     return json({ ...view(res.room, body.pid, body.game), locked: biz.lat != null, ...(res.error && { error: res.error }) }, res.error ? 409 : 200);
   } catch (e) {
     console.error('[room POST]', e);
-    return json({ error: 'Sunucu hatası: ' + (e?.message || e) }, 500);
+    return json({ error: 'Sunucu hatası.' }, 500);
   }
 }
