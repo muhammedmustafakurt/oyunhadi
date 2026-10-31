@@ -48,7 +48,7 @@ export default function Home() {
           <div>
             <p className="mb-6 inline-block rounded-full bg-black/25 px-3.5 py-1.5 text-sm font-bold">Kafe · Bar · Restoran · Otel lobisi</p>
             <h1 className="text-5xl leading-[0.98] font-black sm:text-6xl lg:text-[4.2rem]">
-              Masaya bir karekod koyun, <span className="text-sun">gerisini deste halleder.</span>
+              Masaya bir karekod koyun, <span className="text-sun">gerisini oyunhadi halleder.</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg text-white/90">
               Misafir karekodu okutur, desteden bir oyun çeker; masadaki herkes kendi telefonundan katılır. Tabu, Casus, Vampir Köylü ve daha fazlası, mekânınızın logosu ve renkleriyle. Uygulama yok, üyelik yok.
