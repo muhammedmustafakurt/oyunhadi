@@ -1,18 +1,11 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import useChat from './useChat';
 
-const initials = (nick) => String(nick || '?').slice(0, 1).toUpperCase();
 const clock = (at) => new Date(Number(at)).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
 
-// İki masa arasındaki özel sohbet ekranı. Mesajlar 2 sn'de bir yoklanır; gönderim iyimser gösterilir.
-export default function ChatRoom({ cafe, masa, oda, no }) {
-  const base = `/${cafe}/${masa}/sohbet`;
-  const router = useRouter();
-  const rid = Number(oda);
-  const { data, messages, error, live, busy, act, retry } = useChat({ cafe, masa, room: rid });
+// İki masa arasındaki özel sohbet içeriği. Panelde (ChatWidget) çizilir; oda kimliği sunucuda
+// katılımcıya göre doğrulanır, mesajlar 2 sn'de bir yoklanır, gönderim iyimser gösterilir.
+export default function ChatRoom({ roomId, data, messages, busy, act, onBack }) {
   const [draft, setDraft] = useState('');
   const [pending, setPending] = useState([]);
   const [note, setNote] = useState('');
@@ -22,7 +15,7 @@ export default function ChatRoom({ cafe, masa, oda, no }) {
   const listRef = useRef(null);
 
   const current = data?.current;
-  const peer = data?.rooms.find((r) => r.id === rid)?.peer;
+  const peer = data?.rooms?.find((r) => r.id === roomId)?.peer;
   const closed = !!data && (!current || current.status !== 'active');
 
   useEffect(() => {
@@ -34,7 +27,7 @@ export default function ChatRoom({ cafe, masa, oda, no }) {
     const body = String(text).replace(/\s+/g, ' ').trim().slice(0, 500);
     if (!body) return;
     setNote('');
-    const d = await act('send', { room: rid, body });
+    const d = await act('send', { room: roomId, body });
     if (d?.error) {
       setPending((p) => p.map((m) => (m.tmp === tmp ? { ...m, failed: true, error: d.error } : m)));
     } else {
@@ -57,52 +50,53 @@ export default function ChatRoom({ cafe, masa, oda, no }) {
     if (!window.confirm(`${peer.nick} adlı kişiyi engellemek istiyor musunuz? Yeni istek ve mesaj gönderemez.`)) return;
     const d = await act('block', { target: peer.id });
     if (d?.error) setNote(d.error);
-    else router.replace(base);
+    else onBack();
   };
 
   const close = async () => {
-    const d = await act('close', { room: rid });
+    const d = await act('close', { room: roomId });
     if (d?.error) setNote(d.error);
-    else router.replace(base);
+    else onBack();
   };
 
   const reportIt = async () => {
     if (!peer) return;
-    const d = await act('report', { target: peer.id, room: rid, reason });
+    const d = await act('report', { target: peer.id, room: roomId, reason });
     if (d?.error) setNote(d.error);
     else { setReport(false); setReason(''); setNote('Bildiriminiz işletmeye iletildi.'); }
   };
 
-  return (
-    <main className="oh-page sh sh-chat">
-      <header className="sh-top sh-chat-top">
-        <Link className="oh-back" href={base} aria-label="Sohbetlere dön">←</Link>
-        <div className="sh-top-title">
-          <b>{peer?.nick ?? 'Sohbet'}</b>
-          <small>
-            {peer && <><span className={`sh-dot ${peer.online ? 'on' : ''}`} /> {peer.tbl.replace('masa-', 'Masa ')} · {peer.online ? 'çevrimiçi' : 'çevrimdışı'}</>}
-          </small>
-        </div>
-        <button className="oh-back" aria-label="Sohbet seçenekleri" aria-expanded={menu} onClick={() => setMenu((m) => !m)}>⋯</button>
-      </header>
-
-      {!live && <p className="sh-banner" role="status">Bağlantı koptu, yeniden bağlanılıyor…</p>}
-      {note && <p className="sh-alert" role="alert">{note}</p>}
-      {error && (
+  if (closed) {
+    return (
+      <div className="sh">
         <div className="sh-card sh-block">
-          <b>Sohbet yüklenemedi</b>
-          <p>{error}</p>
-          <button className="btn primary" onClick={retry}>Yeniden dene</button>
+          <b>Bu sohbet kapandı</b>
+          <p>Sohbet sona erdi. Yeni bir sohbet için masalara göz atabilirsiniz.</p>
+          <button className="btn primary" onClick={onBack}>Sohbete dön</button>
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {menu && peer && (
-        <div className="sh-menu" role="menu">
-          <button role="menuitem" disabled={busy} onClick={close}>Sohbeti bitir</button>
-          <button role="menuitem" className="danger" disabled={busy} onClick={block}>Engelle</button>
-          <button role="menuitem" onClick={() => { setReport(true); setMenu(false); }}>İşletmeye bildir</button>
-        </div>
-      )}
+  return (
+    <div className="sh-chat">
+      {note && <p className="sh-alert" role="alert">{note}</p>}
+
+      <div className="sh-chat-bar">
+        <button
+          className="sh-menu-btn"
+          aria-label="Sohbet seçenekleri"
+          aria-expanded={menu}
+          onClick={() => setMenu((m) => !m)}
+        >⋯</button>
+        {menu && (
+          <div className="sh-menu" role="menu">
+            <button role="menuitem" disabled={busy} onClick={close}>Sohbeti bitir</button>
+            <button role="menuitem" className="danger" disabled={busy} onClick={block}>Engelle</button>
+            <button role="menuitem" onClick={() => { setReport(true); setMenu(false); }}>İşletmeye bildir</button>
+          </div>
+        )}
+      </div>
 
       {report && (
         <div className="sh-card sh-block">
@@ -116,58 +110,46 @@ export default function ChatRoom({ cafe, masa, oda, no }) {
         </div>
       )}
 
-      {closed ? (
-        <div className="sh-card sh-block">
-          <b>Bu sohbet kapandı</b>
-          <p>Sohbet sona erdi. Yeni bir sohbet için masalara göz atabilirsiniz.</p>
-          <Link className="btn primary" href={base}>Sohbete dön</Link>
-        </div>
-      ) : (
-        <>
-          <div className="sh-msgs" ref={listRef} role="log" aria-live="polite" aria-label="Mesajlar">
-            {!data && <p className="sh-empty">Mesajlar yükleniyor…</p>}
-            {data && messages.length === 0 && pending.length === 0 && (
-              <p className="sh-empty">Henüz mesaj yok. İlk mesajı siz yazın.</p>
-            )}
-            {messages.map((m) => (
-              <div key={m.id} className={`sh-msg ${m.mine ? 'mine' : ''}`}>
-                <p>{m.body}</p>
-                <small>
-                  {clock(m.at)}
-                  {m.mine && m.seen && ' · Okundu'}
-                </small>
-              </div>
-            ))}
-            {pending.map((m) => (
-              <div key={m.tmp} className={`sh-msg mine ${m.failed ? 'failed' : ''}`}>
-                <p>{m.body}</p>
-                <small>
-                  {m.failed ? 'Gönderilemedi' : 'Gönderiliyor…'}
-                  {m.failed && (
-                    <button className="sh-retry" onClick={() => { setPending((p) => p.filter((x) => x.tmp !== m.tmp)); send(m.body, m.tmp); }}>
-                      Tekrar dene
-                    </button>
-                  )}
-                </small>
-              </div>
-            ))}
+      <div className="sh-msgs" ref={listRef} role="log" aria-live="polite" aria-label="Mesajlar">
+        {!data && <p className="sh-empty">Mesajlar yükleniyor…</p>}
+        {data && messages.length === 0 && pending.length === 0 && (
+          <p className="sh-empty">Henüz mesaj yok. İlk mesajı siz yazın.</p>
+        )}
+        {messages.map((m) => (
+          <div key={m.id} className={`sh-msg ${m.mine ? 'mine' : ''}`}>
+            <p>{m.body}</p>
+            <small>
+              {clock(m.at)}
+              {m.mine && m.seen && ' · Okundu'}
+            </small>
           </div>
+        ))}
+        {pending.map((m) => (
+          <div key={m.tmp} className={`sh-msg mine ${m.failed ? 'failed' : ''}`}>
+            <p>{m.body}</p>
+            <small>
+              {m.failed ? 'Gönderilemedi' : 'Gönderiliyor…'}
+              {m.failed && (
+                <button className="sh-retry" onClick={() => { setPending((p) => p.filter((x) => x.tmp !== m.tmp)); send(m.body, m.tmp); }}>
+                  Tekrar dene
+                </button>
+              )}
+            </small>
+          </div>
+        ))}
+      </div>
 
-          <form className="sh-send" onSubmit={submit}>
-            <input
-              value={draft}
-              maxLength={500}
-              placeholder="Mesaj yazın…"
-              onChange={(e) => setDraft(e.target.value)}
-              aria-label="Mesaj"
-              autoComplete="off"
-            />
-            <button className="btn primary" type="submit" disabled={!draft.trim() || busy}>Gönder</button>
-          </form>
-        </>
-      )}
-
-      <footer className="oh-foot"><Link href="/">oyunhadi</Link> ile tanışılıyor</footer>
-    </main>
+      <form className="sh-send" onSubmit={submit}>
+        <input
+          value={draft}
+          maxLength={500}
+          placeholder="Mesaj yazın…"
+          onChange={(e) => setDraft(e.target.value)}
+          aria-label="Mesaj"
+          autoComplete="off"
+        />
+        <button className="btn primary" type="submit" disabled={!draft.trim() || busy}>Gönder</button>
+      </form>
+    </div>
   );
 }

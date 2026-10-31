@@ -2,8 +2,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getPid } from '@/components/games/useRoom';
 
-// Sohbet oturumu ve yoklaması. Sohbet arayüzü 2 sn'de bir /api/chat'i yoklar (oyun odalarıyla aynı desen);
-// belirteç sunucudan bir kez alınır ve yerelde saklanır, her istekte sunucuya gönderilir.
+// Sohbet oturumu ve yoklaması. Panel açıkken 2 sn, kapalıyken 12 sn'de bir yoklanır (okunmamış
+// sayacı güncel kalsın diye kapalıyken de yavaş yoklama sürer). Belirteç sunucudan bir kez alınır.
 const TKEY = (cafe, masa) => `oh-chat-${cafe}-${masa}`;
 const NKEY = 'oh-nick';
 const BKEY = 'oh-bio';
@@ -13,7 +13,7 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, v); } catch {} },
 };
 
-export default function useChat({ cafe, masa, room }) {
+export default function useChat({ cafe, masa, room, active = true }) {
   const [data, setData] = useState(null);
   const [messages, setMessages] = useState([]);
   const [error, setError] = useState('');
@@ -84,19 +84,22 @@ export default function useChat({ cafe, masa, room }) {
     }
   }, [join]);
 
+  // Oda değişince mesaj geçmişi baştan yüklenir (after=0, son 200 mesaj).
+  useEffect(() => {
+    lastId.current = 0;
+    setMessages([]);
+  }, [room]);
+
   useEffect(() => {
     stop.current = false;
     tok.current = store.get(TKEY(cafe, masa));
-    lastId.current = 0;
-    setMessages([]);
-    setData(null);
     setError('');
     let dead = false;
     const tick = () => { if (!dead && !document.hidden) refresh(); };
     tick();
-    const a = setInterval(tick, 2000);
+    const a = setInterval(tick, active ? 2000 : 12000);
     return () => { dead = true; clearInterval(a); };
-  }, [cafe, masa, refresh, retryTick]);
+  }, [cafe, masa, refresh, retryTick, active]);
 
   const retry = useCallback(() => {
     stop.current = false;

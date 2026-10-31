@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import GameDeck, { type DeckGame } from '@/components/oyun/GameDeck';
 import VenueBadge from '@/components/oyun/VenueBadge';
+import ChatWidget from '@/components/sohbet/ChatWidget';
 import { findCafe, hasTable } from '@/lib/rooms';
 import { GAMES } from '@/lib/games';
 import { SPINE } from '@/lib/spines';
@@ -41,7 +42,6 @@ export default async function TableGames({ params }: PageProps<'/[mekan]/[masa]/
       <div className="felt-intro">
         <h1>Hadi, bir oyun seçin!</h1>
         <p>{v.welcome}</p>
-        <a className="felt-chat" href={`/${mekan}/${masa}/sohbet`}>Masalarla sohbet et →</a>
       </div>
 
       {v.announcement && (
@@ -49,6 +49,8 @@ export default async function TableGames({ params }: PageProps<'/[mekan]/[masa]/
       )}
 
       <GameDeck games={games} soon={soon} introKey={`${mekan}-${masa}`} table={no} />
+
+      <ChatWidget cafe={mekan} masa={masa} no={no} />
 
       <footer className="oh-foot felt-foot"><a href="/">oyunhadi</a> ile oynanıyor</footer>
     </main>

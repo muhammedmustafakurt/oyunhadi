@@ -6,21 +6,22 @@ eklenmiştir; ayrı bir uygulama veya ek servis yoktur.
 
 ## Nasıl çalışır
 
-1. Oyuncu masadaki karekodu okutur (`/[mekan]/[masa]/oyunlar`), "Masalarla sohbet et" bağlantısıyla
-   sohbet ekranına geçer.
-2. İlk açılışta sunucu bir ziyaretçi oturumu ve **tahmin edilemez 32 baytlık belirteç** üretir.
-   Belirteç tarayıcıda `oh-chat-<mekan>-<masa>` anahtarında saklanır; işletme ve masa bilgisi her
-   istekte bu oturum satırından okunur, istemciden gelen kimliklere güvenilmez.
-3. Aynı işletmedeki aktif oturumlar listelenir (başka işletmeler görünmez).
+1. Oyuncu masadaki karekodu okutur (`/[mekan]/[masa]/oyunlar`). Sayfanın sağ altında küçük bir
+   **sohbet balonu** (canlı destek düğmesi) görünür; okunmamış mesaj varsa üstünde rozet taşır.
+2. Balona basınca alt sayfa şeklinde sohbet paneli açılır. İlk açılışta sunucu bir ziyaretçi oturumu
+   ve **tahmin edilemez 32 baytlık belirteç** üretir. Belirteç tarayıcıda
+   `oh-chat-<mekan>-<masa>` anahtarında saklanır; işletme ve masa bilgisi her istekte bu oturum
+   satırından okunur, istemciden gelen kimliklere güvenilmez.
+3. Panelde aynı işletmedeki aktif oturumlar listelenir (başka işletmeler görünmez).
 4. İstek gönderilir; karşı masa kabul ederse iki oturum arasında özel oda açılır.
 5. Mesajlar yalnızca odanın iki katılımcısına döner; okundu bilgisi `chat_messages.seen_at` ile tutulur.
 6. Oturum 10 dakika yoklama yapmazsa (sayfa kapandı) düşer; odaları kapanır. İşletme panelinden de
    oturum kapatılabilir (`kicked`).
 
 Gerçek zamanlılık: Vercel sunucusuz ortamında kalıcı WebSocket yoktur ve projede mevcut bir realtime
-servis yoktur. Bu nedenle oyun odalarıyla aynı yöntem kullanılır: istemci 2 sn'de bir tek uç noktayı
-(`GET /api/chat`) yoklar. Bağlantı kopunca istemci otomatik yeniden dener; arayüz "bağlantı koptu"
-durumunu gösterir.
+servis yoktur. Bu nedenle oyun odalarıyla aynı yöntem kullanılır: panel açıkken istemci 2 sn'de bir,
+panel kapalıyken (rozet güncel kalsın diye) 12 sn'de bir tek uç noktayı (`GET /api/chat`) yoklar.
+Bağlantı kopunca istemci otomatik yeniden dener; arayüz "bağlantı koptu" durumunu gösterir.
 
 ## Veri modeli (otomatik migrasyon)
 

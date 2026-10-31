@@ -1,9 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import useChat from './useChat';
 
+const initials = (nick) => String(nick || '?').slice(0, 1).toUpperCase();
 const ago = (at) => {
   const s = Math.max(0, Math.round((Date.now() - Number(at || 0)) / 1000));
   if (s < 60) return 'az önce';
@@ -12,13 +10,9 @@ const ago = (at) => {
   return `${Math.floor(s / 86400)} gün önce`;
 };
 
-const initials = (nick) => String(nick || '?').slice(0, 1).toUpperCase();
-
-// Sohbet ana ekranı: profil, gelen/giden istekler, aktif sohbetler ve aynı mekândaki masalar.
-export default function ChatHub({ cafe, masa, no }) {
-  const base = `/${cafe}/${masa}/sohbet`;
-  const router = useRouter();
-  const { data, error, live, busy, act, retry } = useChat({ cafe, masa });
+// Sohbet panelinin ana içeriği: profil, gelen/giden istekler, sohbetler ve aynı mekândaki masalar.
+// Sayfa değildir; canlı destek balonunun içinde çizilir (ChatWidget).
+export default function ChatHub({ data, busy, act, onOpenRoom }) {
   const [nick, setNick] = useState('');
   const [bio, setBio] = useState('');
   const [edit, setEdit] = useState(false);
@@ -30,13 +24,6 @@ export default function ChatHub({ cafe, masa, no }) {
     if (me && !edit) { setNick(me.nick); setBio(me.bio ?? ''); }
   }, [me, edit]);
 
-  // Okunmamış mesaj sayısı sekme başlığında görünür.
-  useEffect(() => {
-    const n = (data?.rooms ?? []).reduce((a, r) => a + (r.unread || 0), 0);
-    document.title = n > 0 ? `(${n}) Sohbet · ${masa.replace('masa-', 'Masa ')}` : 'Sohbet';
-    return () => { document.title = 'Sohbet'; };
-  }, [data?.rooms, masa]);
-
   const run = async (fn, okMsg = '') => {
     setNote('');
     const d = await fn();
@@ -47,40 +34,21 @@ export default function ChatHub({ cafe, masa, no }) {
 
   const request = async (target) => {
     const d = await run(() => act('request', { target }));
-    if (d?.roomId) router.push(`${base}/${d.roomId}`);
+    if (d?.roomId) onOpenRoom(d.roomId);
   };
   const accept = async (id) => {
     const d = await run(() => act('accept', { id }));
-    if (d?.roomId) router.push(`${base}/${d.roomId}`);
+    if (d?.roomId) onOpenRoom(d.roomId);
   };
 
   return (
-    <main className="oh-page sh">
-      <header className="sh-top">
-        <Link className="oh-back" href={`/${cafe}/${masa}/oyunlar`} aria-label="Oyunlara dön">←</Link>
-        <div className="sh-top-title"><b>Sohbet</b><small>Masa {no} · masalarla tanışın</small></div>
-        <span className="felt-seat">Masa {no}</span>
-      </header>
-
-      {!live && data && <p className="sh-banner" role="status">Bağlantı koptu, yeniden deniyor…</p>}
-
+    <div className="sh">
       {note && <p className="sh-alert" role="alert">{note}</p>}
-
-      {error && (
-        <div className="sh-card sh-block">
-          <b>Sohbet açılamadı</b>
-          <p>{error}</p>
-          <button className="btn primary" onClick={retry}>Yeniden dene</button>
-        </div>
-      )}
-
-      {!data && !error && <p className="sh-empty">Sohbet hazırlanıyor…</p>}
 
       {data?.disabled && (
         <div className="sh-card sh-block">
           <b>Sohbet şu an kapalı</b>
-          <p>Bu mekân sosyal sohbeti geçici olarak kapattı. Oyunlara dönebilirsiniz.</p>
-          <Link className="btn primary" href={`/${cafe}/${masa}/oyunlar`}>Oyunlara dön</Link>
+          <p>Bu mekân sosyal sohbeti geçici olarak kapattı.</p>
         </div>
       )}
 
@@ -169,7 +137,7 @@ export default function ChatHub({ cafe, masa, no }) {
               <ul className="sh-list">
                 {data.rooms.map((r) => (
                   <li key={r.id}>
-                    <Link className="sh-card sh-item sh-room" href={`${base}/${r.id}`}>
+                    <button className="sh-card sh-item sh-room" onClick={() => onOpenRoom(r.id)}>
                       <div className="sh-avatar sm" aria-hidden="true">{initials(r.peer.nick)}</div>
                       <div className="sh-item-body">
                         <b>{r.peer.nick} <span className={`sh-dot ${r.peer.online ? 'on' : ''}`} title={r.peer.online ? 'Çevrimiçi' : 'Çevrimdışı'} /></b>
@@ -177,7 +145,7 @@ export default function ChatHub({ cafe, masa, no }) {
                         <p>{r.last ? `${r.last.mine ? 'Siz: ' : ''}${r.last.body}` : 'Sohbet başladı, ilk mesajı siz yazın.'}</p>
                       </div>
                       {r.unread > 0 && <span className="sh-unread" aria-label={`${r.unread} okunmamış mesaj`}>{r.unread}</span>}
-                    </Link>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -200,7 +168,7 @@ export default function ChatHub({ cafe, masa, no }) {
                       <small>{t.tbl.replace('masa-', 'Masa ')}{t.bio ? ` · ${t.bio}` : ''}</small>
                     </div>
                     {t.room ? (
-                      <Link className="btn primary sm" href={`${base}/${t.room}`}>Sohbete git</Link>
+                      <button className="btn primary sm" onClick={() => onOpenRoom(t.room)}>Sohbete git</button>
                     ) : t.request === 'out' ? (
                       <span className="sh-tag">İstek gönderildi</span>
                     ) : t.request === 'in' ? (
@@ -225,8 +193,6 @@ export default function ChatHub({ cafe, masa, no }) {
           </p>
         </>
       )}
-
-      <footer className="oh-foot"><Link href="/">oyunhadi</Link> ile tanışılıyor</footer>
-    </main>
+    </div>
   );
 }
